@@ -1,0 +1,48 @@
+name: 缺陷报告
+description: 报告 Web Agent、知识检索、Ansys 执行端或部署问题
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: 组件
+      options:
+        - Web 用户端
+        - 开发管理台
+        - 后端 API
+        - Elasticsearch / 知识库
+        - MongoDB / 工作流
+        - Ansys Mechanical 执行端
+        - 部署与网络
+    validations:
+      required: true
+  - type: textarea
+    id: symptom
+    attributes:
+      label: 问题现象
+      description: 请说明实际结果和预期结果；不要粘贴密钥、密码或完整授权头。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+    validations:
+      required: true
+  - type: input
+    id: request_id
+    attributes:
+      label: 请求 ID 或任务 ID
+  - type: textarea
+    id: logs
+    attributes:
+      label: 已脱敏日志
+      render: text
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: 安全确认
+      options:
+        - label: 我已移除 API Key、Token、密码、个人信息和受限工程文件
+          required: true

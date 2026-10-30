@@ -1,0 +1,10 @@
+{
+  "job_status": "COMPLETED",
+  "external_force": [0, -10000, 0],
+  "reaction_force": [0, 9998, 0],
+  "mesh_metric_coarse": 1.82,
+  "mesh_metric_fine": 1.88,
+  "max_displacement": 1.88,
+  "max_equivalent_stress": 210,
+  "high_risk_warnings": []
+}

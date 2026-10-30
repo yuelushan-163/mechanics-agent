@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN" data-app="user-workbench" data-page="analysis-result">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="有限元分析计划结果" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/assets/user.css" />
+    <title>分析结果 | Mechanics Agent</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="app-header">
+      <div class="shell header-row">
+        <a class="brand" href="/" aria-label="Mechanics Agent 首页"><span class="brand-mark" aria-hidden="true"><span>M</span><span>A</span></span><span class="brand-copy"><strong>Mechanics Agent</strong><small>有限元仿真工作台</small></span></a>
+        <nav class="main-nav" aria-label="用户工作台导航"><a href="/">概览</a><a href="/cases">案例库</a><a href="/analysis/new">新建分析</a></nav>
+        <div class="service-status status-checking" id="serviceStatus" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span id="serviceStatusText">检查服务</span></div>
+      </div>
+    </header>
+    <main id="main" class="shell page result-page">
+      <div id="resultEmpty" class="empty-state" hidden><span>没有可显示的结果</span><h1>先生成一份分析计划</h1><p>填写工况后，系统会在这里展示前置检查、行动计划和工程师审批点。</p><a class="button button-primary" href="/analysis/new">新建分析</a></div>
+      <div id="resultContent" hidden>
+        <header class="result-heading">
+          <div><p class="breadcrumb"><a href="/analysis/new">分析输入</a><span>/</span>结果</p><div class="result-title-row"><span class="result-status" id="precheckStatus">待检查</span><h1 id="planSummary">分析计划</h1></div><p id="planProvenance"></p></div>
+          <div class="result-actions"><a class="button button-secondary" href="/analysis/new">修改输入</a><a class="button button-primary" href="/analysis/new?blank=1">新建分析</a></div>
+        </header>
+        <section class="result-overview" aria-label="结果摘要">
+          <div><span>前置规则</span><strong id="precheckCount">0</strong></div><div><span>缺失输入</span><strong id="missingCount">0</strong></div><div><span>CAD 动作</span><strong id="cadCount">0</strong></div><div><span>Abaqus 动作</span><strong id="feaCount">0</strong></div>
+        </section>
+        <div class="result-layout">
+          <nav class="result-tabs" aria-label="分析结果分类" role="tablist">
+            <button type="button" role="tab" aria-selected="true" data-result-tab="precheck">前置检查 <span id="precheckTabCount">0</span></button>
+            <button type="button" role="tab" aria-selected="false" data-result-tab="missing">缺失输入 <span id="missingTabCount">0</span></button>
+            <button type="button" role="tab" aria-selected="false" data-result-tab="cad">CAD 动作 <span id="cadTabCount">0</span></button>
+            <button type="button" role="tab" aria-selected="false" data-result-tab="fea">Abaqus 动作 <span id="feaTabCount">0</span></button>
+            <button type="button" role="tab" aria-selected="false" data-result-tab="review">风险与审核 <span id="reviewTabCount">0</span></button>
+          </nav>
+          <section class="result-panel" id="resultPanel" aria-live="polite"></section>
+        </div>
+        <footer class="result-meta"><span id="outputMeta"></span><button type="button" class="text-button" id="copyRequestId">复制请求 ID</button></footer>
+      </div>
+    </main>
+    <footer class="app-footer"><div class="shell"><strong>Mechanics Agent</strong><span>规划结果需要工程师确认后才能执行。</span></div></footer>
+    <script src="/assets/user.js" defer></script>
+  </body>
+</html>

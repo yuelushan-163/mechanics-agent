@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mechanics-agent"
+version = "0.3.0"
+description = "OpenAI-compatible LLM + Elasticsearch mechanics verification agent"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.116,<1",
+    "httpx>=0.27,<1",
+    "motor>=3.7,<4",
+    "pydantic>=2.11,<3",
+    "uvicorn>=0.35,<1",
+]
+
+[project.scripts]
+mechanics-agent = "mechanics_agent.main:run"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mechanics_agent = [
+    "frontend/*.html",
+    "frontend/*.css",
+    "frontend/*.js",
+    "frontend/admin/*.html",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"

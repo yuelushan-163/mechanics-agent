@@ -1,0 +1,37 @@
+{
+  "version": "1",
+  "notice": "Measured workflow regression evidence is not independent physics validation. Planned cases must be verified before capability release.",
+  "cases": [
+    {
+      "id": "yangli-1N-two-mesh-252",
+      "category": "workflow_regression",
+      "software": "Mechanical 2025 R2",
+      "status": "executed",
+      "independent_physics_validation": false,
+      "request": "runs/knowledge-convergence-validation/request.json",
+      "evidence": "runs/knowledge-convergence-validation/report.json",
+      "observed": {
+        "elements": [4980, 12558],
+        "displacement_mm": [6.103831080529581e-7, 6.10492806312377e-7],
+        "relative_change": 0.00017968804592724324,
+        "source_unchanged": true
+      },
+      "checks": ["two independent copies", "unchanged load and constraints", "reaction balance", "displacement comparison", "audit artifacts"],
+      "threshold_scope": "Development test 0.01 only; not project acceptance"
+    },
+    {
+      "id": "axial-rod-analytic",
+      "category": "independent_physics_validation",
+      "status": "planned_requires_verified_model",
+      "reference": "delta = F*L/(E*A), stress = F/A for an appropriate uniform axial region",
+      "required": ["verified geometry", "material E and units", "boundary/load assumptions", "evaluation region", "approved error tolerance"]
+    },
+    {
+      "id": "cantilever-bending-analytic",
+      "category": "independent_physics_validation",
+      "status": "planned_requires_verified_model",
+      "reference": "Euler-Bernoulli tip deflection F*L^3/(3*E*I), subject to slender-beam assumptions",
+      "required": ["verified beam dimensions and axis", "bending load", "material E", "approved comparison points and tolerance"]
+    }
+  ]
+}

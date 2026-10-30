@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark" data-app="developer-console">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" href="data:," />
+    <title>Mechanics Agent 开发管理台</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body class="admin-console">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">MA</span>
+        <div>
+          <strong>Mechanics Agent</strong>
+          <span>开发管理台</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <span class="environment-badge">LOCAL</span>
+        <div class="service-state" id="serviceState" aria-live="polite">
+          <span class="state-light state-unknown" id="serviceLight" aria-hidden="true"></span>
+          <span id="serviceStateText">等待检查</span>
+        </div>
+        <a class="button button-quiet" href="/">用户工作台</a>
+        <a class="button button-quiet" href="/docs" target="_blank" rel="noreferrer">API 文档</a>
+        <button class="button button-quiet" id="themeToggle" type="button">切换主题</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <nav class="sidebar" aria-label="开发管理功能">
+        <p class="sidebar-title">开发工具</p>
+        <button class="nav-item is-active" type="button" data-view="overview">
+          <span>运行概览</span><kbd>1</kbd>
+        </button>
+        <button class="nav-item" type="button" data-view="plan">
+          <span>案例规划</span><kbd>2</kbd>
+        </button>
+        <button class="nav-item" type="button" data-view="verify">
+          <span>结果验算</span><kbd>3</kbd>
+        </button>
+        <button class="nav-item" type="button" data-view="search">
+          <span>知识检索</span><kbd>4</kbd>
+        </button>
+        <button class="nav-item" type="button" data-view="ingest">
+          <span>知识导入</span><kbd>5</kbd>
+        </button>
+
+        <div class="sidebar-note">
+          <strong>责任边界</strong>
+          <p>模型负责建议，规则负责验算，工程师负责最终确认。每次调用都保留请求 ID。</p>
+        </div>
+      </nav>
+
+      <main class="main-panel">
+        <section class="view is-active" id="view-overview" data-view-panel="overview">
+          <header class="view-header">
+            <div>
+              <p class="view-kicker">SYSTEM CHECK</p>
+              <h1>先确认依赖，再开始调试</h1>
+              <p>读取后端统一监控的ES、模型、向量、Token与费用状态。</p>
+            </div>
+            <div class="header-buttons">
+              <button class="button button-quiet" id="plannerTestButton" type="button">主动探测模型</button>
+              <button class="button button-primary" id="healthButton" type="button">刷新监控</button>
+            </div>
+          </header>
+
+          <div class="status-grid" id="statusGrid">
+            <article class="status-block">
+              <span>后端 API</span>
+              <strong id="apiStatus">未检查</strong>
+              <small id="apiDetail">等待健康检查</small>
+            </article>
+            <article class="status-block">
+              <span>知识库</span>
+              <strong id="repositoryStatus">未检查</strong>
+              <small id="repositoryDetail">等待健康检查</small>
+            </article>
+            <article class="status-block">
+              <span>业务数据库</span>
+              <strong id="mongoStatus">未检查</strong>
+              <small id="mongoDetail">等待MongoDB检查</small>
+            </article>
+            <article class="status-block">
+              <span>规划模型</span>
+              <strong id="plannerStatus">未检查</strong>
+              <small id="plannerDetail">等待健康检查</small>
+            </article>
+            <article class="status-block">
+              <span>Embedding模型</span>
+              <strong id="embeddingStatus">未检查</strong>
+              <small id="embeddingDetail">等待健康检查</small>
+            </article>
+            <article class="status-block status-block-wide">
+              <span>Token与费用</span>
+              <strong id="usageStatus">未检查</strong>
+              <small id="usageDetail">等待健康检查</small>
+            </article>
+          </div>
+
+          <section class="section-block">
+            <div class="section-heading">
+              <h2>快速开始</h2>
+              <p>使用演示案例验证完整接口链路。</p>
+            </div>
+            <div class="quick-actions">
+              <button class="action-row" type="button" data-jump="plan">
+                <span>
+                  <strong>生成分析计划</strong>
+                  <small>调用知识检索、前置验算和规划模型</small>
+                </span>
+                <span>打开</span>
+              </button>
+              <button class="action-row" type="button" data-jump="verify">
+                <span>
+                  <strong>执行后处理验算</strong>
+                  <small>检查作业状态、平衡、网格、位移和安全系数</small>
+                </span>
+                <span>打开</span>
+              </button>
+              <button class="action-row" type="button" data-jump="search">
+                <span>
+                  <strong>测试知识检索</strong>
+                  <small>查看ES返回的文档、分数和完整响应</small>
+                </span>
+                <span>打开</span>
+              </button>
+            </div>
+          </section>
+
+          <details class="raw-panel">
+            <summary>后端监控快照</summary>
+            <pre id="healthRaw">尚无响应</pre>
+          </details>
+          <details class="raw-panel">
+            <summary>模型主动探测响应</summary>
+            <pre id="plannerTestRaw">尚未测试</pre>
+          </details>
+        </section>
+
+        <section class="view" id="view-plan" data-view-panel="plan">
+          <header class="view-header">
+            <div>
+              <p class="view-kicker">CASE PLAN</p>
+              <h1>案例规划</h1>
+              <p>提交结构化案例，查看检索知识、前置验算和分析计划。</p>
+            </div>
+            <div class="header-buttons">
+              <button class="button button-quiet" id="loadPlanDemo" type="button">载入示例</button>
+              <button class="button button-primary" id="runPlan" type="button">生成计划</button>
+            </div>
+          </header>
+
+          <label class="field-block" for="planEditor">
+            <span>规划请求 JSON</span>
+            <small>请求结构包含 case 与 top_k。</small>
+            <textarea id="planEditor" class="code-editor" spellcheck="false"></textarea>
+          </label>
+
+          <section class="result-panel" id="planResult" aria-live="polite">
+            <div class="empty-state">
+              <strong>等待执行</strong>
+              <p>生成计划后，这里会显示验算结论、风险、动作和原始响应。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="view-verify" data-view-panel="verify">
+          <header class="view-header">
+            <div>
+              <p class="view-kicker">DETERMINISTIC CHECK</p>
+              <h1>结果验算</h1>
+              <p>验算由确定性规则引擎执行，不由模型自由判断。</p>
+            </div>
+            <div class="header-buttons">
+              <button class="button button-quiet" id="loadVerifyDemo" type="button">载入示例</button>
+              <button class="button button-primary" id="runVerify" type="button">执行验算</button>
+            </div>
+          </header>
+
+          <div class="editor-grid">
+            <label class="field-block" for="verifyCaseEditor">
+              <span>案例 JSON</span>
+              <small>包含单位、材料、载荷、边界条件和验收阈值。</small>
+              <textarea id="verifyCaseEditor" class="code-editor" spellcheck="false"></textarea>
+            </label>
+            <label class="field-block" for="evidenceEditor">
+              <span>证据 JSON</span>
+              <small>由Abaqus日志和ODB提取器提供。</small>
+              <textarea id="evidenceEditor" class="code-editor" spellcheck="false"></textarea>
+            </label>
+          </div>
+
+          <label class="compact-field" for="verifyStage">
+            <span>验算阶段</span>
+            <select id="verifyStage">
+              <option value="post">后处理</option>
+              <option value="pre">前处理</option>
+            </select>
+          </label>
+
+          <section class="result-panel" id="verifyResult" aria-live="polite">
+            <div class="empty-state">
+              <strong>等待验算</strong>
+              <p>规则结果会按通过、警告和阻断分组展示。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="view-search" data-view-panel="search">
+          <header class="view-header">
+            <div>
+              <p class="view-kicker">KNOWLEDGE SEARCH</p>
+              <h1>知识检索</h1>
+              <p>验证ES全文检索、结构化过滤和向量召回。</p>
+            </div>
+            <button class="button button-primary" id="runSearch" type="button">执行检索</button>
+          </header>
+
+          <div class="search-form">
+            <label class="field-block field-grow" for="searchQuery">
+              <span>查询内容</span>
+              <input id="searchQuery" value="梁结构 边界条件 网格收敛" />
+            </label>
+            <label class="field-block" for="searchAnalysisType">
+              <span>分析类型</span>
+              <input id="searchAnalysisType" value="linear_static" />
+            </label>
+            <label class="field-block field-small" for="searchTopK">
+              <span>返回数量</span>
+              <input id="searchTopK" type="number" min="1" max="50" value="8" />
+            </label>
+          </div>
+
+          <section class="result-panel" id="searchResult" aria-live="polite">
+            <div class="empty-state">
+              <strong>等待检索</strong>
+              <p>结果会显示文档编号、类型、审核状态、得分和正文。</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="view-ingest" data-view-panel="ingest">
+          <header class="view-header">
+            <div>
+              <p class="view-kicker">KNOWLEDGE INGEST</p>
+              <h1>知识导入</h1>
+              <p>批量写入知识或可执行验算规则，提交前请确认审核状态。</p>
+            </div>
+            <div class="header-buttons">
+              <button class="button button-quiet" id="loadIngestDemo" type="button">载入示例</button>
+              <button class="button button-primary" id="runIngest" type="button">写入 ES</button>
+            </div>
+          </header>
+
+          <div class="warning-callout">
+            示例内容只用于调试数据结构，不能作为工程设计依据。
+          </div>
+
+          <label class="field-block" for="ingestEditor">
+            <span>知识文档数组 JSON</span>
+            <small>正式文档应包含来源、版本、页码和审核状态。</small>
+            <textarea id="ingestEditor" class="code-editor code-editor-tall" spellcheck="false"></textarea>
+          </label>
+
+          <section class="result-panel" id="ingestResult" aria-live="polite">
+            <div class="empty-state">
+              <strong>等待导入</strong>
+              <p>写入结果和ES错误会同时显示在这里与右侧日志区。</p>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <aside class="log-panel" aria-label="实时日志">
+        <header class="log-header">
+          <div>
+            <h2>实时日志</h2>
+            <p id="logSummary">0 条记录</p>
+          </div>
+          <div class="log-header-actions">
+            <button class="button button-quiet button-small" id="copyLogs" type="button">复制</button>
+            <button class="button button-quiet button-small" id="clearLogs" type="button">清空当前视图</button>
+          </div>
+        </header>
+
+        <div class="log-filters">
+          <label for="logLevel">
+            <span>级别</span>
+            <select id="logLevel">
+              <option value="ALL">全部</option>
+              <option value="ERROR">错误</option>
+              <option value="WARNING">警告</option>
+              <option value="INFO">信息</option>
+            </select>
+          </label>
+          <label for="logSource">
+            <span>来源</span>
+            <select id="logSource">
+              <option value="ALL">全部</option>
+              <option value="server">服务端</option>
+              <option value="client">前端</option>
+            </select>
+          </label>
+          <label class="filter-search" for="logSearch">
+            <span>筛选</span>
+            <input id="logSearch" placeholder="请求ID或错误文字" />
+          </label>
+        </div>
+
+        <div class="log-stream" id="logStream" aria-live="polite" aria-relevant="additions">
+          <div class="log-empty">
+            <strong>尚无日志</strong>
+            <p>执行任意操作后，请求、响应和异常会显示在这里。</p>
+          </div>
+        </div>
+
+        <footer class="log-footer">
+          <label>
+            <input id="autoScroll" type="checkbox" checked />
+            <span>自动滚动</span>
+          </label>
+          <span id="pollState">日志同步中</span>
+        </footer>
+      </aside>
+    </div>
+
+    <div class="toast-region" id="toastRegion" aria-live="assertive"></div>
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>

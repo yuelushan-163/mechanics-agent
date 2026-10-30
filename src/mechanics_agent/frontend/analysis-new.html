@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN" data-app="user-workbench" data-page="analysis-new">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="新建有限元分析" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/assets/user.css" />
+    <title>新建分析 | Mechanics Agent</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="app-header">
+      <div class="shell header-row">
+        <a class="brand" href="/" aria-label="Mechanics Agent 首页"><span class="brand-mark" aria-hidden="true"><span>M</span><span>A</span></span><span class="brand-copy"><strong>Mechanics Agent</strong><small>有限元仿真工作台</small></span></a>
+        <nav class="main-nav" aria-label="用户工作台导航"><a href="/">概览</a><a href="/cases">案例库</a><a class="is-active" href="/analysis/new" aria-current="page">新建分析</a></nav>
+        <div class="service-status status-checking" id="serviceStatus" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span id="serviceStatusText">检查服务</span></div>
+      </div>
+    </header>
+
+    <main id="main" class="shell page analysis-page">
+      <header class="analysis-heading">
+        <div><p class="breadcrumb"><a href="/">概览</a><span>/</span>新建分析</p><h1>建立分析工况</h1><p>一次只完成一组信息。草稿会自动保存在当前浏览器。</p></div>
+        <span class="save-state" id="draftState" aria-live="polite">正在载入草稿</span>
+      </header>
+      <div class="template-notice" id="activeTemplateNotice" hidden><div><span>已载入验收案例</span><strong id="activeTemplateTitle"></strong></div><button type="button" class="text-button" id="clearTemplateButton">转为空白案例</button></div>
+
+      <div class="wizard-layout">
+        <aside class="wizard-nav" aria-label="分析输入步骤">
+          <div class="progress-copy"><strong id="progressTitle">基本信息</strong><span id="progressCount">1 / 5</span></div>
+          <div class="progress-line"><span id="progressBar"></span></div>
+          <ol>
+            <li><button type="button" data-step-button="0" class="is-active"><span>1</span><strong>基本信息</strong><small>案例与目标</small></button></li>
+            <li><button type="button" data-step-button="1"><span>2</span><strong>材料与单位</strong><small>材料数据来源</small></button></li>
+            <li><button type="button" data-step-button="2"><span>3</span><strong>载荷</strong><small>大小、方向、区域</small></button></li>
+            <li><button type="button" data-step-button="3"><span>4</span><strong>边界条件</strong><small>支承与自由度</small></button></li>
+            <li><button type="button" data-step-button="4"><span>5</span><strong>验收目标</strong><small>判据与提交</small></button></li>
+          </ol>
+          <button type="button" class="text-button reset-button" id="resetDraftButton">清空当前草稿</button>
+        </aside>
+
+        <form id="caseForm" class="wizard-form" novalidate>
+          <div id="formError" class="error-panel" role="alert" hidden></div>
+          <section class="wizard-step is-active" data-step="0" aria-labelledby="basic-title">
+            <header class="step-heading"><span>基本信息</span><h2 id="basic-title">这次要分析什么？</h2><p>先说清对象、分析类型和工程目标。</p></header>
+            <div class="field-grid">
+              <label><span>案例编号 <b>*</b></span><input id="caseId" name="caseId" required autocomplete="off" /></label>
+              <label><span>案例名称 <b>*</b></span><input id="caseTitle" name="caseTitle" required placeholder="例如：支架强度校核" /></label>
+              <label><span>分析类型 <b>*</b></span><select id="analysisType" name="analysisType" required><option value="linear_static">线性静力</option><option value="nonlinear_static">非线性静力</option><option value="dynamic_implicit">隐式动力</option><option value="dynamic_explicit">显式动力</option><option value="thermal_stress">热应力</option><option value="buckling">屈曲</option></select></label>
+              <label><span>几何理想化 <b>*</b></span><select id="geometryType" name="geometryType" required><option value="beam">梁</option><option value="shell">壳</option><option value="solid">实体</option><option value="mixed">混合</option></select></label>
+              <label class="field-full"><span>工况说明 <b>*</b></span><textarea id="caseDescription" name="caseDescription" rows="4" required placeholder="说明结构、尺寸、载荷位置和使用环境"></textarea></label>
+              <label class="field-full"><span>设计目标 <b>*</b></span><input id="objectives" name="objectives" required placeholder="多个目标用逗号分隔，例如：满足强度要求，控制位移" /></label>
+            </div>
+          </section>
+
+          <section class="wizard-step" data-step="1" aria-labelledby="material-title" hidden>
+            <header class="step-heading"><span>材料与单位</span><h2 id="material-title">采用哪套单位和材料数据？</h2><p>Abaqus 不设内置单位，所有输入必须自洽。</p></header>
+            <div class="field-group"><h3>单位体系</h3><div class="field-grid four-cols">
+              <label><span>长度</span><select id="lengthUnit" name="lengthUnit"><option>mm</option><option>m</option></select></label><label><span>力</span><select id="forceUnit" name="forceUnit"><option>N</option><option>kN</option></select></label><label><span>应力</span><select id="stressUnit" name="stressUnit"><option>MPa</option><option>Pa</option></select></label><label><span>质量</span><select id="massUnit" name="massUnit"><option>tonne</option><option>kg</option></select></label>
+            </div></div>
+            <div class="field-group"><h3>材料数据</h3><div class="field-grid">
+              <label><span>材料名称 <b>*</b></span><input id="materialName" name="materialName" required placeholder="结构钢" /></label><label><span>牌号</span><input id="materialGrade" name="materialGrade" placeholder="Q355" /></label><label><span>材料状态</span><input id="materialState" name="materialState" placeholder="热轧、退火或热处理状态" /></label><label><span>数据来源</span><input id="materialSource" name="materialSource" placeholder="标准号或材料卡编号" /></label><label><span>弹性模量 <b>*</b></span><input id="elasticModulus" name="elasticModulus" type="number" min="0" step="any" required /></label><label><span>泊松比 <b>*</b></span><input id="poissonRatio" name="poissonRatio" type="number" min="-0.99" max="0.499" step="any" required /></label><label><span>屈服强度</span><input id="yieldStrength" name="yieldStrength" type="number" min="0" step="any" /></label><label><span>密度</span><input id="density" name="density" type="number" min="0" step="any" /></label>
+            </div></div>
+          </section>
+
+          <section class="wizard-step" data-step="2" aria-labelledby="load-title" hidden>
+            <header class="step-heading"><span>载荷</span><h2 id="load-title">载荷如何作用？</h2><p>不要用“承重”代替大小、方向和作用区域。</p></header>
+            <div class="field-grid">
+              <label><span>载荷名称 <b>*</b></span><input id="loadName" name="loadName" required placeholder="中点载荷" /></label><label><span>载荷类型 <b>*</b></span><select id="loadType" name="loadType" required><option value="concentrated_force">集中力</option><option value="distributed_force">分布力</option><option value="pressure">压力</option><option value="moment">力矩</option><option value="gravity">重力</option><option value="temperature">温度</option></select></label><label class="field-full"><span>作用区域 <b>*</b></span><input id="loadRegion" name="loadRegion" required placeholder="例如：TOP_FACE 或 MIDSPAN_POINT" /></label><label><span>载荷大小 <b>*</b></span><span class="input-unit"><input id="loadMagnitude" name="loadMagnitude" type="number" step="any" required /><small id="loadUnitLabel">N</small></span></label>
+              <fieldset class="vector-field"><legend>方向向量 <b>*</b></legend><div><label><span>X</span><input id="directionX" name="directionX" type="number" step="any" required /></label><label><span>Y</span><input id="directionY" name="directionY" type="number" step="any" required /></label><label><span>Z</span><input id="directionZ" name="directionZ" type="number" step="any" required /></label></div></fieldset>
+            </div>
+            <aside class="inline-note"><strong>检查提示</strong><p>方向向量不能全部为 0。温度、重力和随时间变化的载荷需要在说明中明确。</p></aside>
+          </section>
+
+          <section class="wizard-step" data-step="3" aria-labelledby="support-title" hidden>
+            <header class="step-heading"><span>边界条件</span><h2 id="support-title">结构在哪里被支承？</h2><p>明确支承类型、区域和受限自由度。</p></header>
+            <div class="support-grid">
+              <fieldset class="support-card"><legend>支承 A</legend><div class="field-grid single-col"><label><span>名称 <b>*</b></span><input id="supportAName" name="supportAName" required /></label><label><span>类型 <b>*</b></span><select id="supportAType" name="supportAType" required><option value="fixed">固支</option><option value="pinned">铰支</option><option value="roller">滚动支承</option><option value="elastic">弹性支承</option><option value="symmetry">对称</option></select></label><label><span>作用区域 <b>*</b></span><input id="supportARegion" name="supportARegion" required /></label><fieldset class="dof-group"><legend>受限自由度</legend><div><label><input type="checkbox" name="supportADof" value="U1" /> U1</label><label><input type="checkbox" name="supportADof" value="U2" /> U2</label><label><input type="checkbox" name="supportADof" value="U3" /> U3</label><label><input type="checkbox" name="supportADof" value="UR1" /> UR1</label><label><input type="checkbox" name="supportADof" value="UR2" /> UR2</label><label><input type="checkbox" name="supportADof" value="UR3" /> UR3</label></div></fieldset></div></fieldset>
+              <fieldset class="support-card"><legend>支承 B</legend><div class="field-grid single-col"><label><span>名称 <b>*</b></span><input id="supportBName" name="supportBName" required /></label><label><span>类型 <b>*</b></span><select id="supportBType" name="supportBType" required><option value="fixed">固支</option><option value="pinned">铰支</option><option value="roller">滚动支承</option><option value="elastic">弹性支承</option><option value="symmetry">对称</option></select></label><label><span>作用区域 <b>*</b></span><input id="supportBRegion" name="supportBRegion" required /></label><fieldset class="dof-group"><legend>受限自由度</legend><div><label><input type="checkbox" name="supportBDof" value="U1" /> U1</label><label><input type="checkbox" name="supportBDof" value="U2" /> U2</label><label><input type="checkbox" name="supportBDof" value="U3" /> U3</label><label><input type="checkbox" name="supportBDof" value="UR1" /> UR1</label><label><input type="checkbox" name="supportBDof" value="UR2" /> UR2</label><label><input type="checkbox" name="supportBDof" value="UR3" /> UR3</label></div></fieldset></div></fieldset>
+            </div>
+            <aside class="inline-note"><strong>检查提示</strong><p>系统会检查刚体运动风险，但不会替你猜测支承条件。</p></aside>
+          </section>
+
+          <section class="wizard-step" data-step="4" aria-labelledby="acceptance-title" hidden>
+            <header class="step-heading"><span>验收目标</span><h2 id="acceptance-title">什么结果才算可接受？</h2><p>定义工程判据，生成后再审核假设和风险。</p></header>
+            <div class="field-grid"><label><span>最大允许位移</span><input id="maxDisplacement" name="maxDisplacement" type="number" min="0" step="any" placeholder="可留空" /></label><label><span>最小安全系数</span><input id="minSafetyFactor" name="minSafetyFactor" type="number" min="0" step="any" placeholder="可留空" /></label><label><span>最大网格变化率 <b>*</b></span><input id="maxMeshChangeRatio" name="maxMeshChangeRatio" type="number" min="0" max="1" step="any" required /></label><label><span>最大力平衡误差 <b>*</b></span><input id="maxForceBalanceError" name="maxForceBalanceError" type="number" min="0" max="1" step="any" required /></label></div>
+            <div class="review-summary" id="reviewSummary"></div>
+          </section>
+
+          <footer class="wizard-actions">
+            <button class="button button-secondary" id="previousStepButton" type="button" disabled>上一步</button>
+            <div><span id="stepHint">完成基本信息后继续</span><button class="button button-primary" id="nextStepButton" type="button">下一步</button><button class="button button-primary" id="submitPlanButton" type="submit" hidden>生成分析计划</button></div>
+          </footer>
+        </form>
+      </div>
+    </main>
+    <footer class="app-footer"><div class="shell"><strong>Mechanics Agent</strong><span>草稿只保存在当前浏览器。</span></div></footer>
+    <script src="/assets/user.js" defer></script>
+  </body>
+</html>

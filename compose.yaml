@@ -1,0 +1,225 @@
+name: mechanics-agent
+
+services:
+  mongodb:
+    image: public.ecr.aws/docker/library/mongo:7.0.39-jammy
+    restart: unless-stopped
+    command:
+      - mongod
+      - --auth
+      - --bind_ip_all
+      - --wiredTigerCacheSizeGB
+      - "0.25"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-mongo_root}
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_root_password
+      MONGO_APP_DATABASE: ${MONGO_APP_DATABASE:-mechanics_agent}
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME:-mechanics_app}
+    secrets:
+      - mongo_root_password
+      - mongo_app_password
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+      - ./deploy/mongo-init.js:/docker-entrypoint-initdb.d/10-create-app-user.js:ro
+    expose:
+      - "27017"
+    networks:
+      - data_net
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          mongosh --quiet --host 127.0.0.1
+          --username "$${MONGO_INITDB_ROOT_USERNAME}"
+          --password "$$(cat /run/secrets/mongo_root_password)"
+          --authenticationDatabase admin
+          --eval "quit(db.adminCommand('ping').ok ? 0 : 2)"
+      interval: 20s
+      timeout: 8s
+      retries: 10
+      start_period: 30s
+    mem_limit: 450m
+    cpus: 0.60
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.17
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      xpack.security.http.ssl.enabled: "false"
+      xpack.ml.enabled: "false"
+      xpack.watcher.enabled: "false"
+      ingest.geoip.downloader.enabled: "false"
+      node.processors: "1"
+      indices.memory.index_buffer_size: "5%"
+      ES_JAVA_OPTS: >-
+        -Xms256m -Xmx256m
+        -XX:MaxDirectMemorySize=128m
+        -XX:ActiveProcessorCount=1
+      ELASTIC_PASSWORD_FILE: /run/secrets/es_password
+    secrets:
+      - es_password
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    expose:
+      - "9200"
+    networks:
+      - data_net
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -fsS --user "elastic:$$(cat /run/secrets/es_password)"
+          'http://127.0.0.1:9200/_cluster/health?wait_for_status=green&timeout=5s'
+          >/dev/null
+      interval: 20s
+      timeout: 8s
+      retries: 30
+      start_period: 180s
+    mem_limit: 720m
+    cpus: 0.70
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      labels:
+        org.opencontainers.image.version: ${APP_VERSION:-0.1.0}
+    image: mechanics-agent:${APP_VERSION:-0.1.0}
+    restart: unless-stopped
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      ES_URL: http://elasticsearch:9200
+      ES_USERNAME: elastic
+      ES_INDEX_PREFIX: mechanics-agent
+      ES_VERIFY_CERTS: "false"
+      ES_VECTOR_DIMS: 1024
+      MONGO_URL: mongodb://mongodb:27017
+      MONGO_APP_DATABASE: ${MONGO_APP_DATABASE:-mechanics_agent}
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME:-mechanics_app}
+      MONGO_REQUEST_TIMEOUT_SECONDS: "5"
+      PLANNER_MODE: ${PLANNER_MODE:-local}
+      SILICONFLOW_BASE_URL: https://api.siliconflow.cn/v1
+      SILICONFLOW_MODEL: deepseek-ai/DeepSeek-V4-Flash
+      SILICONFLOW_PRICING_MODEL: deepseek-ai/DeepSeek-V4-Flash
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
+      EMBEDDING_PROVIDER: siliconflow
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-}
+      EMBEDDING_DIMS: 1024
+      EMBEDDING_SEND_DIMENSIONS: "true"
+      EMBEDDING_PRICING_MODEL: Qwen/Qwen3-Embedding-0.6B
+      TZ: Asia/Shanghai
+    secrets:
+      - siliconflow_api_key
+      - embedding_api_key
+      - moonshot_api_key
+      - source: es_api_password
+        target: es_password
+      - source: mongo_api_password
+        target: mongo_app_password
+    expose:
+      - "8000"
+    networks:
+      - app_net
+      - data_net
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=3)
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+    mem_limit: 256m
+    cpus: 0.60
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  nginx:
+    image: public.ecr.aws/docker/library/nginx:1.28.3-alpine
+    restart: unless-stopped
+    # The shared Caddy container reaches this gateway only through app_net.
+    # No Mechanics Agent port is published on the host.
+    expose:
+      - "443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/secrets/nginx.htpasswd:/etc/nginx/.htpasswd:ro
+      - ./deploy/secrets/tls.crt:/etc/nginx/tls/tls.crt:ro
+      - ./deploy/secrets/tls.key:/etc/nginx/tls/tls.key:ro
+    networks:
+      - app_net
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health/live"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    mem_limit: 64m
+    cpus: 0.20
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  app_net:
+  data_net:
+    internal: true
+
+volumes:
+  mongo_data:
+  mongo_config:
+  es_data:
+
+secrets:
+  mongo_root_password:
+    file: ./deploy/secrets/mongo_root_password
+  mongo_app_password:
+    file: ./deploy/secrets/mongo_app_password
+  mongo_api_password:
+    file: ./deploy/secrets/mongo_api_password
+  es_password:
+    file: ./deploy/secrets/es_password
+  es_api_password:
+    file: ./deploy/secrets/es_api_password
+  siliconflow_api_key:
+    file: ./deploy/secrets/siliconflow_api_key
+  embedding_api_key:
+    file: ./deploy/secrets/embedding_api_key
+  moonshot_api_key:
+    file: ./deploy/secrets/moonshot_api_key

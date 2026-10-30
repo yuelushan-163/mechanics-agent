@@ -1,0 +1,59 @@
+{
+  "case": {
+    "case_id": "beam-demo-001",
+    "title": "简支梁强度与刚度校核",
+    "analysis_type": "linear_static",
+    "geometry_type": "beam",
+    "description": "跨度1200 mm的钢梁承受竖向集中载荷",
+    "unit_system": {
+      "length": "mm",
+      "force": "N",
+      "stress": "MPa",
+      "mass": "tonne"
+    },
+    "material": {
+      "name": "结构钢",
+      "grade": "Q355",
+      "state": "示例，待确认",
+      "elastic_modulus": 210000,
+      "poisson_ratio": 0.3,
+      "yield_strength": 355,
+      "source_id": "待补充"
+    },
+    "loads": [
+      {
+        "name": "中点载荷",
+        "load_type": "concentrated_force",
+        "region": "MIDSPAN_LOAD_POINT",
+        "magnitude": 10000,
+        "direction": [0, -1, 0],
+        "unit": "N"
+      }
+    ],
+    "boundary_conditions": [
+      {
+        "name": "左侧铰支",
+        "boundary_type": "pinned",
+        "region": "LEFT_SUPPORT",
+        "constrained_dofs": ["U1", "U2", "U3"]
+      },
+      {
+        "name": "右侧滚支",
+        "boundary_type": "roller",
+        "region": "RIGHT_SUPPORT",
+        "constrained_dofs": ["U2", "U3"]
+      }
+    ],
+    "acceptance": {
+      "max_displacement": 2.0,
+      "min_safety_factor": 1.5,
+      "max_mesh_change_ratio": 0.05,
+      "max_force_balance_error": 0.01
+    },
+    "objectives": ["满足强度和刚度约束", "最小化质量"],
+    "metadata": {
+      "demo_only": true
+    }
+  },
+  "top_k": 8
+}

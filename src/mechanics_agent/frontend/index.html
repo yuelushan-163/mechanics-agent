@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN" data-app="user-workbench" data-page="home">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Mechanics Agent 有限元仿真工作台" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/assets/user.css" />
+    <title>Mechanics Agent</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="app-header">
+      <div class="shell header-row">
+        <a class="brand" href="/" aria-label="Mechanics Agent 首页">
+          <span class="brand-mark" aria-hidden="true"><span>M</span><span>A</span></span>
+          <span class="brand-copy"><strong>Mechanics Agent</strong><small>有限元仿真工作台</small></span>
+        </a>
+        <nav class="main-nav" aria-label="用户工作台导航">
+          <a class="is-active" href="/" aria-current="page">概览</a>
+          <a href="/cases">案例库</a>
+          <a href="/analysis/new">新建分析</a>
+        </nav>
+        <div class="service-status status-checking" id="serviceStatus" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span><span id="serviceStatusText">检查服务</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="shell page home-page">
+      <section class="home-intro">
+        <div>
+          <p class="kicker">结构分析工作区</p>
+          <h1>先定义工况，<br />再生成仿真计划。</h1>
+          <p class="lead">从已验证案例开始，或新建一个分析。系统会检查输入、检索知识并生成可审核的 CAD 与 Abaqus 行动计划。</p>
+          <div class="button-row">
+            <a class="button button-primary" href="/analysis/new">新建分析</a>
+            <a class="button button-secondary" href="/cases">浏览验收案例</a>
+          </div>
+        </div>
+        <aside class="start-panel" aria-labelledby="continue-title">
+          <span class="panel-label">继续工作</span>
+          <h2 id="continue-title">本机草稿</h2>
+          <p id="draftSummary">正在检查已保存的分析草稿</p>
+          <dl class="draft-meta" id="draftMeta"></dl>
+          <a class="text-link" href="/analysis/new" id="continueDraftLink">打开草稿</a>
+        </aside>
+      </section>
+
+      <section class="home-flow" aria-labelledby="flow-title">
+        <div class="section-title"><h2 id="flow-title">一条清楚的分析路径</h2><p>每个页面只处理一个决定，结果和输入不会混在一起。</p></div>
+        <ol class="flow-list">
+          <li><span>定义</span><strong>输入工况</strong><p>明确几何、材料、载荷、支承与验收目标。</p></li>
+          <li><span>检查</span><strong>补齐缺项</strong><p>先拦截单位、自由度和材料来源等关键问题。</p></li>
+          <li><span>规划</span><strong>生成行动</strong><p>结合知识库生成 CAD 与 Abaqus 操作计划。</p></li>
+          <li><span>审核</span><strong>工程师确认</strong><p>确认假设、风险和审批点后再进入软件执行。</p></li>
+        </ol>
+      </section>
+
+      <section class="boundary-note" aria-labelledby="boundary-title">
+        <div><h2 id="boundary-title">当前能力边界</h2><p>目前生成分析计划并执行规则检查，不会直接操作 SolidWorks 或 Abaqus。</p></div>
+        <a class="text-link" href="/cases">查看可测试的场景</a>
+      </section>
+    </main>
+
+    <footer class="app-footer"><div class="shell"><strong>Mechanics Agent</strong><span>模型给出建议，工程师确认结论。</span></div></footer>
+    <script src="/assets/user.js" defer></script>
+  </body>
+</html>

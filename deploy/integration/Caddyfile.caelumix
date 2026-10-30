@@ -1,0 +1,45 @@
+caelumix.online {
+    encode gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        X-Frame-Options DENY
+        Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+        Strict-Transport-Security "max-age=31536000"
+    }
+
+    redir /admin /admin/ 308
+    handle /admin/* {
+        uri strip_prefix /admin
+        reverse_proxy host.docker.internal:8765
+    }
+    handle {
+        root * /srv
+        file_server
+    }
+}
+
+www.caelumix.online {
+    redir https://caelumix.online{uri} 308
+}
+
+mechanics.caelumix.online {
+    encode gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        X-Frame-Options SAMEORIGIN
+        Strict-Transport-Security "max-age=31536000"
+    }
+
+    reverse_proxy https://mechanics-agent-nginx-1:443 {
+        transport http {
+            tls_insecure_skip_verify
+        }
+    }
+}
+
+http://8.145.63.176 {
+    root * /srv
+    file_server
+}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN" data-app="user-workbench" data-page="cases">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Mechanics Agent 验收案例库" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/assets/user.css" />
+    <title>验收案例 | Mechanics Agent</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="app-header">
+      <div class="shell header-row">
+        <a class="brand" href="/" aria-label="Mechanics Agent 首页"><span class="brand-mark" aria-hidden="true"><span>M</span><span>A</span></span><span class="brand-copy"><strong>Mechanics Agent</strong><small>有限元仿真工作台</small></span></a>
+        <nav class="main-nav" aria-label="用户工作台导航"><a href="/">概览</a><a class="is-active" href="/cases" aria-current="page">案例库</a><a href="/analysis/new">新建分析</a></nav>
+        <div class="service-status status-checking" id="serviceStatus" aria-live="polite"><span class="status-dot" aria-hidden="true"></span><span id="serviceStatusText">检查服务</span></div>
+      </div>
+    </header>
+
+    <main id="main" class="shell page">
+      <header class="page-heading compact-heading">
+        <div><p class="kicker">验收案例</p><h1>从已知场景开始</h1><p>选择一个经过核对的工程场景，查看预期结果和审批门，再载入分析。</p></div>
+        <a class="button button-secondary" href="/analysis/new?blank=1">从空白案例开始</a>
+      </header>
+      <section class="catalog-layout" aria-label="案例选择">
+        <div class="catalog-list-wrap">
+          <div class="catalog-toolbar"><strong id="templateCount">正在读取案例</strong><button class="text-button" type="button" id="retryTemplates" hidden>重新读取</button></div>
+          <div class="case-template-list" id="caseTemplateList" aria-live="polite"><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div></div>
+        </div>
+        <article class="case-template-detail" id="caseTemplateDetail" aria-live="polite"><div class="detail-empty"><strong>选择左侧案例</strong><p>这里会显示场景说明、基准结果和需要确认的事项。</p></div></article>
+      </section>
+    </main>
+    <footer class="app-footer"><div class="shell"><strong>Mechanics Agent</strong><span>验收案例用于验证流程，不替代项目工程判断。</span></div></footer>
+    <script src="/assets/user.js" defer></script>
+  </body>
+</html>

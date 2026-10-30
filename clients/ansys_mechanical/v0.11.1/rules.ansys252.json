@@ -1,0 +1,94 @@
+{
+  "version": "ansys252-linear-static-loads-2",
+  "source_sha256": "9f131e7a54a786fd7e96dc007f7a5f544b00f9cd80b9d84aaf41fa5f1206fd98",
+  "notice": "可审核规则映射清单；计算器固定在代码中，不执行知识库文本。阈值在每次 request.json 中留痕。",
+  "rules": [
+    {
+      "rule_id": "PRE-MAT-001",
+      "source_sheet": "验算规则",
+      "source_row": 6,
+      "knowledge_ids": "K018-K024",
+      "evaluator": "verification.evaluate",
+      "scope": "Mechanical 252, single-step small-deformation static, one FixedSupport and one Force",
+      "status": "manual_or_not_applicable",
+      "threshold_policy": "User-supplied for displacement and convergence; existing single-force balance tolerance remains 1e-4*max(abs(F_i)), floor 1e-8 N"
+    },
+    {
+      "rule_id": "PRE-MESH-QUALITY-001",
+      "source_sheet": "验算规则",
+      "source_row": 17,
+      "knowledge_ids": "K031",
+      "evaluator": "verification.evaluate",
+      "scope": "Mechanical 252, single-step small-deformation static, one FixedSupport and one Force",
+      "status": "implemented_review_required",
+      "threshold_policy": "User-supplied for displacement and convergence; existing single-force balance tolerance remains 1e-4*max(abs(F_i)), floor 1e-8 N"
+    },
+    {
+      "rule_id": "POST-JOB-001",
+      "source_sheet": "验算规则",
+      "source_row": 20,
+      "knowledge_ids": "K076",
+      "evaluator": "verification.evaluate",
+      "scope": "Mechanical 252, single-step small-deformation static, one FixedSupport and one Force",
+      "status": "implemented_review_required",
+      "threshold_policy": "User-supplied for displacement and convergence; existing single-force balance tolerance remains 1e-4*max(abs(F_i)), floor 1e-8 N"
+    },
+    {
+      "rule_id": "POST-WARN-001",
+      "source_sheet": "验算规则",
+      "source_row": 21,
+      "knowledge_ids": "K076",
+      "evaluator": "verification.evaluate",
+      "scope": "Mechanical 252, single-step small-deformation static, one FixedSupport and one Force",
+      "status": "implemented_review_required",
+      "threshold_policy": "User-supplied for displacement and convergence; existing single-force balance tolerance remains 1e-4*max(abs(F_i)), floor 1e-8 N"
+    },
+    {
+      "rule_id": "POST-FORCE-001",
+      "source_sheet": "验算规则",
+      "source_row": 22,
+      "knowledge_ids": "K081",
+      "evaluator": "verification.evaluate",
+      "scope": "Mechanical 252, single-step small-deformation static, one FixedSupport and one Force",
+      "status": "implemented_review_required",
+      "threshold_policy": "User-supplied for displacement and convergence; existing single-force balance tolerance remains 1e-4*max(abs(F_i)), floor 1e-8 N"
+    },
+    {
+      "rule_id": "POST-MESH-001",
+      "source_sheet": "验算规则",
+      "source_row": 23,
+      "knowledge_ids": "K035",
+      "evaluator": "verification.evaluate",
+      "scope": "Mechanical 252, single-step small-deformation static, one FixedSupport and one Force",
+      "status": "implemented_review_required",
+      "threshold_policy": "User-supplied for displacement and convergence; existing single-force balance tolerance remains 1e-4*max(abs(F_i)), floor 1e-8 N"
+    },
+    {
+      "rule_id": "POST-DISP-001",
+      "source_sheet": "验算规则",
+      "source_row": 24,
+      "knowledge_ids": "K046",
+      "evaluator": "verification.evaluate",
+      "scope": "Mechanical 252, single-step small-deformation static, one FixedSupport and one Force",
+      "status": "implemented_review_required",
+      "threshold_policy": "User-supplied for displacement and convergence; existing single-force balance tolerance remains 1e-4*max(abs(F_i)), floor 1e-8 N"
+    },
+    {
+      "rule_id": "POST-SF-001",
+      "source_sheet": "验算规则",
+      "source_row": 25,
+      "knowledge_ids": "K047/K049",
+      "evaluator": "verification.evaluate",
+      "scope": "Mechanical 252, single-step small-deformation static, one FixedSupport and one Force",
+      "status": "manual_or_not_applicable",
+      "threshold_policy": "User-supplied for displacement and convergence; existing single-force balance tolerance remains 1e-4*max(abs(F_i)), floor 1e-8 N"
+    },
+    {
+      "rule_id": "POST-MOMENT-001",
+      "source": "v0.10 pure-couple equilibrium implementation",
+      "status": "implemented_review_required",
+      "scope": "pure moment only; global axes; net applied force zero"
+    }
+  ],
+  "load_scope": "single primary Force/Pressure/Moment/Acceleration(gravity)/RemoteForce/vertex Force/LinePressure, one FixedSupport"
+}
